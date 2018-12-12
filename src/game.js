@@ -1,11 +1,13 @@
 var Game = {
 	_display:null,
 	_currentScreen:null,
+	_screenWidth:60,
+	_screenHeight:30,
 
 	init:function() {
 		var displayOption = {
-			width:60, 
-			height:30,
+			width:this._screenWidth, 
+			height:this._screenHeight,
 			forceSquareRatio:true,
 			fontSize: 18
 		};
@@ -16,16 +18,24 @@ var Game = {
 			window.addEventListener(event, function(e) {
 				if(game._currentScreen !== null) {
 					game._currentScreen.handleInput(event, e);
+					game._display.clear();
+					game._currentScreen.render(game._display);
 				}
 			});
 		}
 		bindEventToScreen('keydown');
-		bindEventToScreen('keyup');
-		bindEventToScreen('keypress');
+		// bindEventToScreen('keyup');
+		// bindEventToScreen('keypress');
 	},
 
 	getDisplay:function() {
 		return this._display;
+	},
+	getScreenWidth: function() {
+		return this._screenWidth;
+	},
+	getScreenHeight: function() {
+		return this._screenHeight;
 	},
 
 	switchScreen:function(screen) {
