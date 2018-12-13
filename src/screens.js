@@ -16,6 +16,7 @@ Game.Screen.startScreen = {
     }
 }
 Game.Screen.playScreen = {
+<<<<<<< HEAD
     _map:null,
     _player:null,
 
@@ -78,6 +79,14 @@ Game.Screen.playScreen = {
             this._player.getBackground()
         );
     },    
+=======
+    enter:function() { },
+    exit:function() { },
+    render:function(display) {
+        display.drawText(3,5, "%c{red}%b{white}This game is so much fun!");
+        display.drawText(4,6, "Press [Enter] to win, or [Esc] to lose!");
+    },
+>>>>>>> parent of 846e40a... Screen scoll
     handleInput:function(inputType, inputData) {
         if(inputType === 'keydown') {
             // If enter is pressed, go to the win screen
@@ -87,6 +96,7 @@ Game.Screen.playScreen = {
             } else if (inputData.keyCode === ROT.VK_ESCAPE) {
                 Game.switchScreen(Game.Screen.loseScreen);
             }
+<<<<<<< HEAD
             // Movement
             if (inputData.keyCode === ROT.VK_LEFT) {
                 this.move(-1, 0);
@@ -97,6 +107,8 @@ Game.Screen.playScreen = {
             } else if (inputData.keyCode === ROT.VK_DOWN) {
                 this.move(0, 1);
             }
+=======
+>>>>>>> parent of 846e40a... Screen scoll
         }
     },
     move:function(dX, dY) {
