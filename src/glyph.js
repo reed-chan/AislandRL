@@ -1,12 +1,9 @@
-Game.Glyph = function(properties) {
-    // Instantiate properties to default if they weren't passed
-    properties = properties || {};
-    this._char = properties['character'] || ' ';
-    this._foreground = properties['foreground'] || 'white';
-    this._background = properties['background'] || 'black';
+Game.Glyph = function(chr, foreground, background) {
+    this._char = chr || ' ';
+    this._foreground = foreground || 'white';
+    this._background = background || 'black';
 };
 
-// Create standard getters for glyphs
 Game.Glyph.prototype.getChar = function(){ 
     return this._char; 
 }
