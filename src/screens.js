@@ -62,12 +62,11 @@ Game.Screen.playScreen = {
             }
         });
         // Create our map from the tiles
-        this._map = new Game.Map(map);
-        // Create our player and set the position
+
         this._player = new Game.Entity(Game.PlayerTemplate);
-        var position = this._map.getRandomFloorPosition();
-        this._player.setX(position.x);
-        this._player.setY(position.y);
+        this._map = new Game.Map(map, this._player);
+        // Start the map's engine
+        this._map.getEngine().start();
     },
     exit: function() { console.log("Exited play screen."); },
     render: function(display) {
@@ -95,14 +94,38 @@ Game.Screen.playScreen = {
                     tile.getBackground())
             }
         }
-        // Render the player
-        display.draw(
-            this._player.getX() - topLeftX, 
-            this._player.getY() - topLeftY,    
-            this._player.getChar(), 
-            this._player.getForeground(), 
-            this._player.getBackground()
-        );
+        // Render the entities
+        var entities = this._map.getEntities();
+        for (var i = 0; i < entities.length; i++) {
+            var entity = entities[i];
+            // Only render the entitiy if they would show up on the screen
+            if (entity.getX() >= topLeftX && entity.getY() >= topLeftY &&
+                entity.getX() < topLeftX + screenWidth &&
+                entity.getY() < topLeftY + screenHeight) {
+                display.draw(
+                    entity.getX() - topLeftX, 
+                    entity.getY() - topLeftY,    
+                    entity.getChar(), 
+                    entity.getForeground(), 
+                    entity.getBackground()
+                );
+            }
+        }
+        // Get the messages in the player's queue and render them
+        var messages = this._player.getMessages();
+        var messageY = 0;
+        for (var i = 0; i < messages.length; i++) {
+            // Draw each message, adding the number of lines
+            messageY += display.drawText(
+                0, 
+                messageY,
+                '%c{white}%b{black}' + messages[i]
+            );
+        }    
+        // Render player HP 
+        var stats = '%c{white}%b{black}';
+        stats += vsprintf('HP: %d/%d ', [this._player.getHp(), this._player.getMaxHp()]);
+        display.drawText(0, screenHeight, stats);            
     },
     handleInput: function(inputType, inputData) {
         if (inputType === 'keydown') {
@@ -123,6 +146,8 @@ Game.Screen.playScreen = {
             } else if (inputData.keyCode === ROT.KEYS.VK_DOWN) {
                 this.move(0, 1);
             }
+            // Unlock the engine
+            this._map.getEngine().unlock();            
         }    
     },
     move: function(dX, dY) {

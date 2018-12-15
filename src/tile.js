@@ -7,7 +7,7 @@ Game.Tile = function(properties) {
     this._background = properties['background'] || 'black';
     // Set up the properties. We use false by default.
     this._isWalkable = properties['isWalkable'] || false;
-    this._isDiggable = properties['isDiggable'] || false;
+    // this._isDiggable = properties['isDiggable'] || false;
 };
 // Make tiles inherit all the functionality from glyphs
 // Game.Tile.extend(Game.Glyph);
@@ -40,4 +40,14 @@ Game.Tile.wallTile = new Game.Tile({
     character: '墙',
     foreground: '#8B7500',
     // isDiggable: true
+});
+Game.Tile.stairsUpTile = new Game.Tile({
+    character: '<',
+    foreground: 'white',
+    isWalkable: true
+});
+Game.Tile.stairsDownTile = new Game.Tile({
+    character: '>',
+    foreground: 'white',
+    isWalkable: true
 });
