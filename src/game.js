@@ -28,7 +28,7 @@ var Game =  {
         // Bind keyboard input events
         bindEventToScreen('keydown');
         //bindEventToScreen('keyup');
-        //bindEventToScreen('keypress');
+        bindEventToScreen('keypress');
     },
 	getDisplay: function() {
 		return this._display;
@@ -65,7 +65,7 @@ var Game =  {
 window.onload = function() {
     Game.init();
     // Add the container to our HTML page
-    document.body.appendChild(Game.getDisplay().getContainer());
+    document.getElementById("gameArea").appendChild(Game.getDisplay().getContainer());
     // Load the start screen
     Game.switchScreen(Game.Screen.startScreen);
 }

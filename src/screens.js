@@ -24,47 +24,15 @@ Game.Screen.playScreen = {
     _map: null,
     _player: null,
     enter: function() {  
-        var map = [];
         // Create a map based on our size parameters
-        var mapWidth = 70;
-        var mapHeight = 40;
-        for (var x = 0; x < mapWidth; x++) {
-            // Create the nested array for the y values
-            map.push([]);
-            // Add all the tiles
-            for (var y = 0; y < mapHeight; y++) {
-                map[x].push(Game.Tile.nullTile);
-            }
-        }
-        // // Setup the map generator
-        // var generator = new ROT.Map.Cellular(mapWidth, mapHeight);
-        // generator.randomize(0.5);
-        // var totalIterations = 3;
-        // // Iteratively smoothen the map
-        // for (var i = 0; i < totalIterations - 1; i++) {
-        //     generator.create();
-        // }
-        // // Smoothen it one last time and then update our map
-        // generator.create(function(x,y,v) {
-        //     if (v === 1) {
-        //         map[x][y] = Game.Tile.floorTile;
-        //     } else {
-        //         map[x][y] = Game.Tile.wallTile;
-        //     }
-        // });
-        var generator = new ROT.Map.Digger(mapWidth, mapHeight, 
-            {timeLimit: 5000});
-        generator.create(function(x,y,v) {
-            if (v === 0) {
-                map[x][y] = Game.Tile.floorTile;
-            } else {
-                map[x][y] = Game.Tile.wallTile;
-            }
-        });
-        // Create our map from the tiles
-
+        var width = 70;
+        var height = 40;
+        var depth = 10;
+        // Create our map from the tiles and player
+        var tiles = new Game.Builder(width, height, depth).getTiles();
         this._player = new Game.Entity(Game.PlayerTemplate);
-        this._map = new Game.Map(map, this._player);
+        this._map = new Game.Map(tiles, this._player);
+        //this._map = new Game.Map(map, this._player);
         // Start the map's engine
         this._map.getEngine().start();
     },
@@ -80,20 +48,55 @@ Game.Screen.playScreen = {
         var topLeftY = Math.max(0, this._player.getY() - (screenHeight / 2));
         // Make sure we still have enough space to fit an entire game screen
         topLeftY = Math.min(topLeftY, this._map.getHeight() - screenHeight);
+        var visibleCells = {};
+        // Store this._map and player's z to prevent losing it in callbacks
+        var map = this._map;
+        var currentDepth = this._player.getZ();
+        // Find all visible cells and update the object
+        map.getFov(currentDepth).compute(
+            this._player.getX(), this._player.getY(), 
+            this._player.getSightRadius(), 
+            function(x, y, radius, visibility) {
+                visibleCells[x + "," + y] = true;
+                // Mark cell as explored
+                map.setExplored(x, y, currentDepth, true);
+            });
         // Iterate through all visible map cells
         for (var x = topLeftX; x < topLeftX + screenWidth; x++) {
             for (var y = topLeftY; y < topLeftY + screenHeight; y++) {
-                // Fetch the glyph for the tile and render it to the screen
-                // at the offset position.
-                var tile = this._map.getTile(x, y);
-                display.draw(
-                    x - topLeftX,
-                    y - topLeftY,
-                    tile.getChar(), 
-                    tile.getForeground(), 
-                    tile.getBackground())
+                if (visibleCells[x + ',' + y]) {
+                    // Fetch the glyph for the tile and render it to the screen
+                    // at the offset position.
+                    var tile = this._map.getTile(x, y, this._player.getZ());
+                    display.draw(
+                        x - topLeftX,
+                        y - topLeftY,
+                        tile.getChar(), 
+                        tile.getForeground(), 
+                        tile.getBackground());
+                }
             }
         }
+        // Render the explored map cells
+        for (var x = topLeftX; x < topLeftX + screenWidth; x++) {
+            for (var y = topLeftY; y < topLeftY + screenHeight; y++) {
+                if (map.isExplored(x, y, currentDepth)) {
+                    // Fetch the glyph for the tile and render it to the screen
+                    // at the offset position.
+                    var tile = this._map.getTile(x, y, currentDepth);
+                    // The foreground color becomes dark gray if the tile has been
+                    // explored but is not visible
+                    var foreground = visibleCells[x + ',' + y] ?
+                        tile.getForeground() : '#444';
+                    display.draw(
+                        x - topLeftX,
+                        y - topLeftY,
+                        tile.getChar(), 
+                        foreground, 
+                        tile.getBackground());
+                }
+            }
+        }        
         // Render the entities
         var entities = this._map.getEntities();
         for (var i = 0; i < entities.length; i++) {
@@ -101,14 +104,17 @@ Game.Screen.playScreen = {
             // Only render the entitiy if they would show up on the screen
             if (entity.getX() >= topLeftX && entity.getY() >= topLeftY &&
                 entity.getX() < topLeftX + screenWidth &&
-                entity.getY() < topLeftY + screenHeight) {
-                display.draw(
-                    entity.getX() - topLeftX, 
-                    entity.getY() - topLeftY,    
-                    entity.getChar(), 
-                    entity.getForeground(), 
-                    entity.getBackground()
-                );
+                entity.getY() < topLeftY + screenHeight &&
+                entity.getZ() == this._player.getZ()) {
+                if (visibleCells[entity.getX() + ',' + entity.getY()]) {
+                    display.draw(
+                        entity.getX() - topLeftX, 
+                        entity.getY() - topLeftY,    
+                        entity.getChar(), 
+                        entity.getForeground(), 
+                        entity.getBackground()
+                    );
+                }
             }
         }
         // Get the messages in the player's queue and render them
@@ -138,23 +144,36 @@ Game.Screen.playScreen = {
             }
             // Movement
             if (inputData.keyCode === ROT.KEYS.VK_LEFT) {
-                this.move(-1, 0);
+                this.move(-1, 0, 0);
             } else if (inputData.keyCode === ROT.KEYS.VK_RIGHT) {
-                this.move(1, 0);
+                this.move(1, 0, 0);
             } else if (inputData.keyCode === ROT.KEYS.VK_UP) {
-                this.move(0, -1);
+                this.move(0, -1, 0);
             } else if (inputData.keyCode === ROT.KEYS.VK_DOWN) {
-                this.move(0, 1);
+                this.move(0, 1, 0);
             }
             // Unlock the engine
             this._map.getEngine().unlock();            
+        } else if (inputType === 'keypress') {
+            var keyChar = String.fromCharCode(inputData.charCode);
+            if (keyChar === '>') {
+                this.move(0, 0, 1);
+            } else if (keyChar === '<') {
+                this.move(0, 0, -1);
+            } else {
+                // Not a valid key
+                return;
+            }
+            // Unlock the engine
+            this._map.getEngine().unlock();
         }    
     },
-    move: function(dX, dY) {
+    move: function(dX, dY, dZ) {
         var newX = this._player.getX() + dX;
         var newY = this._player.getY() + dY;
+        var newZ = this._player.getZ() + dZ;
         // Try to move to the new cell
-        this._player.tryMove(newX, newY, this._map);
+        this._player.tryMove(newX, newY, newZ, this._map);
     }
 }
 

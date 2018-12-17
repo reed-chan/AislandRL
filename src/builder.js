@@ -31,7 +31,7 @@ Game.Builder.prototype._generateLevel = function() {
         map[w] = new Array(this._height);
     }
     // Setup the cave generator
-    var generator = new ROT.Map.Digger(mapWidth, mapHeight, 
+    var generator = new ROT.Map.Digger(this._width, this._height, 
         {timeLimit: 5000});
     generator.create(function(x,y,v) {
         if (v === 0) {

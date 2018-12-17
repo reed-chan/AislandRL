@@ -10,6 +10,7 @@ Game.Entity = function(properties) {
     this._name = properties['name'] || '';
     this._x = properties['x'] || 0;
     this._y = properties['y'] || 0;
+    this._z = properties['z'] || 0;
     this._map = null;
     // Create an object which will keep track what mixins we have
     // attached to this entity based on the name property
@@ -86,4 +87,14 @@ Game.Entity.prototype.setMap = function(map) {
 Game.Entity.prototype.getMap = function() {
     return this._map;
 }    
-
+Game.Entity.prototype.setZ = function(z) {
+    this._z = z;
+}
+Game.Entity.prototype.getZ = function() {
+    return this._z;
+}
+Game.Entity.prototype.setPosition = function(x, y, z) {
+    this._x = x;
+    this._y = y;
+    this._z = z;
+}
