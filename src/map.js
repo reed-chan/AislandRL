@@ -14,10 +14,14 @@ Game.Map = function(tiles, player) {
     this.setupFov();
     // add the player
     this.addEntityAtRandomPosition(player, 0);
-    // add random fungi
+    // add random enemies
+    var templates = [Game.FungusTemplate, Game.BatTemplate, Game.NewtTemplate];
     for (var z = 0; z < this._depth; z++) {
         for (var i = 0; i < 10; i++) {
-            this.addEntityAtRandomPosition(new Game.Entity(Game.FungusTemplate), z);
+            // Randomly select a template
+            var template = templates[Math.floor(Math.random() * templates.length)];
+            // Place the entity
+            this.addEntityAtRandomPosition(new Game.Entity(template), z);
         }
     }
     this._explored = new Array(this._depth);

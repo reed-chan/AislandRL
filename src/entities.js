@@ -58,58 +58,6 @@ Game.sendMessageNearby = function(map, centerX, centerY, centerZ, message, args)
     }
 }
 
-// Define our Moveable mixin
-Game.Mixins.Moveable = {
-    name: 'Moveable',
-    tryMove: function(x, y, z, map) {
-        var map = this.getMap();
-        // Must use starting z
-        var tile = map.getTile(x, y, this.getZ());
-        var target = map.getEntityAt(x, y, this.getZ());
-        // If our z level changed, check if we are on stair
-        if (z < this.getZ()) {
-            if (tile != Game.Tile.stairsUpTile) {
-                Game.sendMessage(this, "你不能从这里上楼");
-            } else {
-                Game.sendMessage(this, "你爬到了第%d层", [z + 1]);
-                this.setPosition(x, y, z);
-            }
-        } else if (z > this.getZ()) {
-            if (tile != Game.Tile.stairsDownTile) {
-                Game.sendMessage(this, "你不能从这里下楼");
-            } else {
-                this.setPosition(x, y, z);
-                Game.sendMessage(this, "你下到了第%d层", [z + 1]);
-            }
-        // If an entity was present at the tile
-        } else if (target) {
-            // If we are an attacker, try to attack
-            // the target
-            if (this.hasMixin('Attacker')) {
-                this.attack(target);
-                return true;
-            } else {
-                // If not nothing we can do, but we can't 
-                // move to the tile
-                return false;
-            }
-        // Check if we can walk on the tile
-        // and if so simply walk onto it
-        } else if (tile.isWalkable()) {        
-            // Update the entity's position
-            this.setPosition(x, y, z);
-            return true;
-        // Check if the tile is diggable, and
-        // if so try to dig it
-        } 
-        // else if (tile.isDiggable()) {
-        //     map.dig(x, y, z);
-        //     return true;
-        // }
-        return false;
-    }    
-}
-
 Game.Mixins.Destructible = {
     name: 'Destructible',
     init: function(template) {
@@ -134,8 +82,11 @@ Game.Mixins.Destructible = {
         // If have 0 or less HP, then remove ourseles from the map
         if (this._hp <= 0) {
             Game.sendMessage(attacker, '你杀死了%s', [this.getName()]);
-            Game.sendMessage(this, '你死了');
-            this.getMap().removeEntity(this);
+            if (this.hasMixin(Game.Mixins.PlayerActor)) {
+                this.act();
+            } else {
+                this.getMap().removeEntity(this);
+            }
         }
     }
 }
@@ -169,6 +120,12 @@ Game.Mixins.PlayerActor = {
     name: 'PlayerActor',
     groupName: 'Actor',
     act: function() {
+        // Detect if the game is over
+        if (this.getHp() < 1) {
+            Game.Screen.playScreen.setGameEnded(true);
+            // Send a last message to the player
+            Game.sendMessage(this, '你死了 按下回车继续');
+        }
         // Re-render the screen
         Game.refresh();
         // Lock the engine and wait asynchronously
@@ -177,6 +134,21 @@ Game.Mixins.PlayerActor = {
         this.clearMessages();     
     }
 }
+
+Game.Mixins.WanderActor = {
+    name: 'WanderActor',
+    groupName: 'Actor',
+    act: function() {
+        // Flip coin to determine if moving by 1 in the positive or negative direction
+        var moveOffset = (Math.round(Math.random()) === 1) ? 1 : -1;
+        // Flip coin to determine if moving in x direction or y direction
+        if (Math.round(Math.random()) === 1) {
+            this.tryMove(this.getX() + moveOffset, this.getY(), this.getZ());
+        } else {
+            this.tryMove(this.getX(), this.getY() + moveOffset, this.getZ());
+        }
+    }
+};
 
 Game.Mixins.FungusActor = {
     name: 'FungusActor',
@@ -225,7 +197,6 @@ Game.PlayerTemplate = {
     attackValue: 10,
     sightRadius: 5,
     mixins: [
-        Game.Mixins.Moveable, 
         Game.Mixins.PlayerActor,
         Game.Mixins.Attacker,
         Game.Mixins.Destructible,
@@ -244,3 +215,29 @@ Game.FungusTemplate = {
         Game.Mixins.Destructible
     ]
 }
+
+Game.BatTemplate = {
+    name: '蝙蝠',
+    character: 'B',
+    foreground: 'white',
+    maxHp: 5,
+    attackValue: 4,
+    mixins: [
+        Game.Mixins.WanderActor, 
+        Game.Mixins.Attacker,
+        Game.Mixins.Destructible
+    ]
+};
+
+Game.NewtTemplate = {
+    name: '蝾螈',
+    character: 'N',
+    foreground: 'yellow',
+    maxHp: 3,
+    attackValue: 2,
+    mixins: [
+        Game.Mixins.WanderActor, 
+        Game.Mixins.Attacker,
+        Game.Mixins.Destructible
+    ]
+};

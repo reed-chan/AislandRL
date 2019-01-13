@@ -23,6 +23,7 @@ Game.Screen.startScreen = {
 Game.Screen.playScreen = {
     _map: null,
     _player: null,
+    _gameEnded: false,
     enter: function() {  
         // Create a map based on our size parameters
         var width = 70;
@@ -134,6 +135,13 @@ Game.Screen.playScreen = {
         display.drawText(0, screenHeight, stats);            
     },
     handleInput: function(inputType, inputData) {
+        if (this._gameEnded) {
+            if (inputType === 'keydown' && inputData.keyCode === ROT.KEYS.VK_RETURN) {
+                Game.switchScreen(Game.Screen.loseScreen);
+            }
+            // Return to make sure the user can't still play
+            return;
+        }
         if (inputType === 'keydown') {
             // If enter is pressed, go to the win screen
             // If escape is pressed, go to lose screen
@@ -174,6 +182,9 @@ Game.Screen.playScreen = {
         var newZ = this._player.getZ() + dZ;
         // Try to move to the new cell
         this._player.tryMove(newX, newY, newZ, this._map);
+    },
+    setGameEnded: function(gameEnded) {
+        this._gameEnded = gameEnded;
     }
 }
 
