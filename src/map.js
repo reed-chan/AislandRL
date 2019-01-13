@@ -6,6 +6,8 @@ Game.Map = function(tiles, player) {
     this._height = tiles[0][0].length;
     // create a list which will hold the entities
     this._entities = {};
+    // item table
+    this._items = {};
     // create the engine and scheduler
     this._scheduler = new ROT.Scheduler.Simple();
     this._engine = new ROT.Engine(this._scheduler);
@@ -18,10 +20,12 @@ Game.Map = function(tiles, player) {
     var templates = [Game.FungusTemplate, Game.BatTemplate, Game.NewtTemplate];
     for (var z = 0; z < this._depth; z++) {
         for (var i = 0; i < 10; i++) {
-            // Randomly select a template
-            var template = templates[Math.floor(Math.random() * templates.length)];
-            // Place the entity
-            this.addEntityAtRandomPosition(new Game.Entity(template), z);
+            // Add a random entity
+            this.addEntityAtRandomPosition(Game.EntityRepository.createRandom(), z);
+        }
+        for (var i = 0; i < 15; i++) {
+            // Add a random entity
+            this.addItemAtRandomPosition(Game.ItemRepository.createRandom(), z);
         }
     }
     this._explored = new Array(this._depth);
@@ -128,6 +132,17 @@ Game.Map.prototype.addEntity = function(entity) {
        this._scheduler.add(entity, true);
     }
 }
+Game.Map.prototype.removeEntity = function(entity) {
+    // Remove the entity from the map
+    var key = entity.getX() + ',' + entity.getY() + ',' + entity.getZ();
+    if (this._entities[key] == entity) {
+        delete this._entities[key];
+    }
+    // If the entity is an actor, remove them from the scheduler
+    if (entity.hasMixin('Actor')) {
+        this._scheduler.remove(entity);
+    }
+}
 
 Game.Map.prototype.getRandomFloorPosition = function(z) {
     // Randomly generate a tile which is a floor
@@ -145,18 +160,6 @@ Game.Map.prototype.addEntityAtRandomPosition = function(entity, z) {
     entity.setY(position.y);
     entity.setZ(position.z);
     this.addEntity(entity);
-}
-
-Game.Map.prototype.removeEntity = function(entity) {
-    // Remove the entity from the map
-    var key = entity.getX() + ',' + entity.getY() + ',' + entity.getZ();
-    if (this._entities[key] == entity) {
-        delete this._entities[key];
-    }
-    // If the entity is an actor, remove them from the scheduler
-    if (entity.hasMixin('Actor')) {
-        this._scheduler.remove(entity);
-    }
 }
 
 Game.Map.prototype.setupFov = function() {
@@ -208,4 +211,68 @@ Game.Map.prototype.isExplored = function(x, y, z) {
     } else {
         return false;
     }
+};
+
+Game.Map.prototype.getItemsAt = function(x, y, z) {
+    return this._items[x + ',' + y + ',' + z];
+};
+
+Game.Map.prototype.setItemsAt = function(x, y, z, items) {
+    // If our items array is empty, then delete the key from the table.
+    var key = x + ',' + y + ',' + z;
+    if (items.length === 0) {
+        if (this._items[key]) {
+            delete this._items[key];
+        }
+    } else {
+        // Simply update the items at that key
+        this._items[key] = items;
+    }
+};
+
+Game.Map.prototype.addItem = function(x, y, z, item) {
+    // If we already have items at that position, simply append the item to the 
+    // list of items.
+    var key = x + ',' + y + ',' + z;
+    if (this._items[key]) {
+        this._items[key].push(item);
+    } else {
+        this._items[key] = [item];
+    }
+};
+
+Game.Map.prototype.addItemAtRandomPosition = function(item, z) {
+    var position = this.getRandomFloorPosition(z);
+    this.addItem(position.x, position.y, position.z, item);
+};Game.Map.prototype.getItemsAt = function(x, y, z) {
+    return this._items[x + ',' + y + ',' + z];
+};
+
+Game.Map.prototype.setItemsAt = function(x, y, z, items) {
+    // If our items array is empty, then delete the key from the table.
+    var key = x + ',' + y + ',' + z;
+    if (items.length === 0) {
+        if (this._items[key]) {
+            delete this._items[key];
+        }
+    } else {
+        // Simply update the items at that key
+        this._items[key] = items;
+    }
+};
+
+Game.Map.prototype.addItem = function(x, y, z, item) {
+    // If we already have items at that position, simply append the item to the 
+    // list of items.
+    var key = x + ',' + y + ',' + z;
+    if (this._items[key]) {
+        this._items[key].push(item);
+    } else {
+        this._items[key] = [item];
+    }
+};
+
+Game.Map.prototype.addItemAtRandomPosition = function(item, z) {
+    var position = this.getRandomFloorPosition(z);
+    this.addItem(position.x, position.y, position.z, item);
 };

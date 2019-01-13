@@ -172,9 +172,9 @@ Game.Mixins.FungusActor = {
                     if (this.getMap().isEmptyFloor(this.getX() + xOffset,
                                                    this.getY() + yOffset,
                                                    this.getZ())) {
-                        var entity = new Game.Entity(Game.FungusTemplate);
-                        entity.setPosition(this.getX() + xOffset, 
-                            this.getY() + yOffset, this.getZ());
+                        var entity = Game.EntityRepository.create('fungus');
+                        entity.setPosition(this.getX() + xOffset, this.getY() + yOffset,
+                            this.getZ());
                         this.getMap().addEntity(entity);
                         this._growthsRemaining--;
                         // Send a message nearby!
@@ -205,7 +205,9 @@ Game.PlayerTemplate = {
     ]
 }
 
-Game.FungusTemplate = {
+Game.EntityRepository = new Game.Repository('entities', Game.Entity);
+
+Game.EntityRepository.define('fungus', {
     name: '真菌',
     character: 'F',
     foreground: 'green',
@@ -214,9 +216,9 @@ Game.FungusTemplate = {
         Game.Mixins.FungusActor,
         Game.Mixins.Destructible
     ]
-}
+});
 
-Game.BatTemplate = {
+Game.EntityRepository.define('bat', {
     name: '蝙蝠',
     character: 'B',
     foreground: 'white',
@@ -227,9 +229,9 @@ Game.BatTemplate = {
         Game.Mixins.Attacker,
         Game.Mixins.Destructible
     ]
-};
+});
 
-Game.NewtTemplate = {
+Game.EntityRepository.define('newt', {
     name: '蝾螈',
     character: ':',
     foreground: 'yellow',
@@ -240,4 +242,4 @@ Game.NewtTemplate = {
         Game.Mixins.Attacker,
         Game.Mixins.Destructible
     ]
-};
+});
