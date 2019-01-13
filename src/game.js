@@ -10,7 +10,7 @@ var Game =  {
 			height:this._screenHeight+1,
 			forceSquareRatio:true,
 			fontSize: 18
-		};        
+        };        
         this._display = new ROT.Display(displayOption);
         // Create a helper function for binding to an event
         // and making it send it to the screen

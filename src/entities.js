@@ -231,7 +231,7 @@ Game.BatTemplate = {
 
 Game.NewtTemplate = {
     name: '蝾螈',
-    character: 'N',
+    character: ':',
     foreground: 'yellow',
     maxHp: 3,
     attackValue: 2,

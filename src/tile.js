@@ -49,13 +49,13 @@ Game.Tile.wallTile = new Game.Tile({
 });
 Game.Tile.stairsUpTile = new Game.Tile({
     character: '<',
-    foreground: 'white',
+    foreground: 'red',
     walkable: true,
     blocksLight: false
 });
 Game.Tile.stairsDownTile = new Game.Tile({
     character: '>',
-    foreground: 'white',
+    foreground: 'red',
     walkable: true,
     blocksLight: false
 });
