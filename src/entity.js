@@ -94,7 +94,15 @@ Game.Entity.prototype.getZ = function() {
     return this._z;
 }
 Game.Entity.prototype.setPosition = function(x, y, z) {
+    var oldX = this._x;
+    var oldY = this._y;
+    var oldZ = this._z;
+    // Update position
     this._x = x;
     this._y = y;
     this._z = z;
+    // If the entity is on a map, notify the map that the entity has moved.
+    if (this._map) {
+        this._map.updateEntityPosition(this, oldX, oldY, oldZ);
+    }
 }

@@ -99,8 +99,8 @@ Game.Screen.playScreen = {
         }        
         // Render the entities
         var entities = this._map.getEntities();
-        for (var i = 0; i < entities.length; i++) {
-            var entity = entities[i];
+        for (var key in entities) {
+            var entity = entities[key];
             // Only render the entitiy if they would show up on the screen
             if (entity.getX() >= topLeftX && entity.getY() >= topLeftY &&
                 entity.getX() < topLeftX + screenWidth &&

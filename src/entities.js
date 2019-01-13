@@ -223,7 +223,7 @@ Game.PlayerTemplate = {
     background: 'black',
     maxHp: 40,
     attackValue: 10,
-    sightRadius: 8,
+    sightRadius: 5,
     mixins: [
         Game.Mixins.Moveable, 
         Game.Mixins.PlayerActor,
