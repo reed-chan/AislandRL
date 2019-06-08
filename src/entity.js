@@ -144,6 +144,15 @@ Game.Entity.prototype.tryMove = function(x, y, z, map) {
     } else if (tile.isWalkable()) {        
         // Update the entity's position
         this.setPosition(x, y, z);
+        // Notify the entity that there are items at this position
+        var items = this.getMap().getItemsAt(x, y, z);
+        if (items) {
+            if (items.length === 1) {
+                Game.sendMessage(this, "你看见%s", [items[0].describeA()]);
+            } else {
+                Game.sendMessage(this, "地面上有许多东西");
+            }
+        }
         return true;
     // Check if the tile is diggable
     } 

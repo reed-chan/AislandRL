@@ -11,10 +11,18 @@ Game.Item = function(properties) {
 
 Game.Item.prototype.getChar = function(){ 
     return this._char; 
-}
+};
 Game.Item.prototype.getBackground = function(){
     return this._background;
-}
+};
 Game.Item.prototype.getForeground = function(){ 
     return this._foreground; 
+};
+
+Game.Item.prototype.describe = function() {
+    return this._name;
+};
+
+Game.Item.prototype.describeA = function() {
+    return "" + this.describe();
 }
